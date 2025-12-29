@@ -1,0 +1,310 @@
+{
+  "name": "LinkedIn Post Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "post writer",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "Topic",
+              "fieldLabel": "create post"
+            },
+            {
+              "fieldName": "Target audience",
+              "fieldLabel": "Target"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -736,
+        0
+      ],
+      "id": "9948565a-8f6a-4532-85b9-f61dbb3b4e31",
+      "name": "On form submission",
+      "webhookId": "e333b1ed-8799-4db4-a63e-bbc9eb479797"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-2025-04-14",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-2025-04-14"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        224
+      ],
+      "id": "e3860bc3-067a-4bd8-b816-96f8e3cddab5",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "4BgUZshm7DrP5gqY",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic to Search : {{ $json.Topic }}\nsearch & Explain the Topic in simple ways that need to understood by {{ $json['Target audience'] }}.\n",
+        "options": {
+          "systemMessage": "##Overview\nYou are an expert AI research agent specializing in LinkedIn content creation. Your role is to research topics deeply, synthesize information, and prepare compelling content that resonates with specific audiences. \n\nWhen researching a topic:\n1. Search for current, credible information using available tools\n2. Identify key insights, trends, and pain points relevant to the target audience\n3. Structure findings with clear sections: Overview, Key Points, Real-World Examples, and Actionable Insights\n4. Ensure explanations are accessible and written at the appropriate level for the specified audience\n5. Highlight unique angles or controversial perspectives that encourage discussion\n6. Provide data/statistics where available to add credibility\n\nAlways prioritize clarity, accuracy, and audience engagement. Format your final output as structured research findings that can be easily converted into engaging LinkedIn posts."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "4a34afef-d42c-4a7d-a82a-3c6641ef078d",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=LinkedIn Post:{{ $json.output }}",
+        "options": {
+          "systemMessage": "=Create a clean, professional LinkedIn graphic (1.2:1 aspect ratio) illustrating 'AI Hallucinations for Engineers'. \nTop: Blue header bar with AI brain + glitch icon. \nMiddle: 3 vertical cards showing fabrication, misattribution, and logical error with icons.\nRight: 3 polaroid-style examples (chatbot/invented bios, image gen/impossible images, medical/fake data).\nBottom: Checklist with 4 actionable steps for managing hallucinations.\nFooter: \"For AI engineers: Understand, detect, manage hallucinations for trustworthy AI.\"\nStyle: Modern sans-serif, light gray background, blue/green text, orange accents. Clean line icons, no emojis."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -160,
+        0
+      ],
+      "id": "2a390bad-06d6-4679-bb81-3a563e6951e7",
+      "name": "Image Agent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\":\"{{ $json.Topic }}\" ,\n  \"search_depth\": \"basic\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 1,\n  \"topic\": \"general\",\n  \"time_range\": null,\n  \"start_date\": \"2025-02-09\",\n  \"end_date\": \"2025-12-29\",\n  \"include_answer\": false,\n  \"include_raw_content\": false,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_favicon\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": [],\n  \"country\": null,\n  \"auto_parameters\": false,\n  \"include_usage\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [
+        -464,
+        224
+      ],
+      "id": "e55efe56-5623-43a8-9e40-1f3cac0e5b4c",
+      "name": "Tavily_search"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "dall-e-3"
+            },
+            {
+              "name": "prompt",
+              "value": "=Image creating in way explain the instructions from Image agent : {{ $json.output }}"
+            },
+            {
+              "name": "size",
+              "value": "1024x1024"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        0
+      ],
+      "id": "5fede2ae-c185-4e07-af3b-b72c1a2f413e",
+      "name": "Image-Generation"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data[0].url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        0
+      ],
+      "id": "0cab5744-cfa8-49fc-a3cc-d3d61cde6cbc",
+      "name": "Download the Image"
+    },
+    {
+      "parameters": {
+        "person": "BUShzeSj-G",
+        "text": "={{ $('Research Agent').item.json.output.substring(0,3000) }}",
+        "shareMediaCategory": "IMAGE",
+        "binaryPropertyName": "=data",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        576,
+        0
+      ],
+      "id": "9ac957b8-a12a-4cbb-8d40-59345c88ea70",
+      "name": "write Post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "U4Ti3BV4Ga05ukqU",
+          "name": "LinkedIn account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Here U can download the image from URL Generated from Image-Generation",
+        "height": 128,
+        "width": 176,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        352,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "361ac1a0-8299-49cd-b21c-364fa2d6f72d",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Image Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Image Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily_search": {
+      "ai_tool": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Agent": {
+      "main": [
+        [
+          {
+            "node": "Image-Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image-Generation": {
+      "main": [
+        [
+          {
+            "node": "Download the Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download the Image": {
+      "main": [
+        [
+          {
+            "node": "write Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "06f5f9be-a27e-4ae2-afe0-a585ac0b7db8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33a2f3a5a9f324acb8e4d0e42c5e4ebfc12ad7192eef31cd7d92989be11d8b97"
+  },
+  "id": "23pENgAhcBofsUx2",
+  "tags": []
+}
